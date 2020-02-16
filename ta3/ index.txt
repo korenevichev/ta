@@ -1,0 +1,61 @@
+
+DB
+
+Допустим, в MySQL есть две таблицы Table1 и Table2 с одинаковым списком полей:
+
+ID1 int(11) NOT NULL default 0,
+ID2 int(11) NOT NULL default 0,
+ID3 int(11) NOT NULL default 0,
+Value varchar(255) NOT NULL default ''
+
+
+В обеих таблицах по миллиону записей;
+значения полей ID1, ID2, ID3 равномерно распределены между 0 и 1000;
+ключей в таблицах нет.
+
+Эти таблицы участвуют только в запросе вида:
+
+SELECT
+        T1.ID3,
+        COUNT(*),
+        COUNT(DISTINCT T1.ID1,T1.ID2),
+        SUM(T1.ID1+T2.ID2),
+        CONCAT(T1.Value,T2.Value)
+
+FROM
+        Table1 T1
+
+INNER JOIN
+        Table2 T2 USING(ID1,ID3)
+
+WHERE
+        T1.ID2 BETWEEN 600 AND 700
+
+AND
+        T1.ID1 & 3 = 0
+
+AND
+        T2.ID3 BETWEEN 600 AND 700
+
+GROUP BY
+        T1.ID3
+
+
+Какие индексы оптимальнее создать для таблиц Table1 и Table2?
+
+1. alter table Table1 add key (ID1);
+2. alter table Table1 add key (ID2);
+3. alter table Table1 add key (ID3);
+4. alter table Table1 add key (ID1,ID3);
+5. alter table Table1 add key (ID1,ID2);
+6. alter table Table2 add key (ID1);
+7. alter table Table2 add key (ID2);
+8. alter table Table2 add key (ID3);
+9. alter table Table2 add key (ID1,ID3);
+
+Отметьте один или несколько индексов и прокомментируйте свой ответ.
+
+2, 9
+
+9 т.к. джоин по этим колонкам + будет использоваться для T2.ID3 BETWEEN 600 AND 700
+2 будет использоваться для T1.ID2 BETWEEN 600 AND 700
